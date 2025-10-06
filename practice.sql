@@ -84,7 +84,7 @@ SELECT
 FROM
     countries
 WHERE
-    name LIKE '%ia'
+    name ILIKE '%ia'
 ;
 
 -- 問10
@@ -94,7 +94,7 @@ SELECT
 FROM
     countries
 WHERE
-    name LIKE '%st%'
+    name ILIKE '%st%'
 ;
 
 
@@ -105,7 +105,7 @@ SELECT
 FROM
     countries
 WHERE
-    name LIKE 'an%'
+    name ILIKE 'an%'
 ;
 
 
