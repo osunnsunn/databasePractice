@@ -43,8 +43,8 @@ SELECT
 FROM
     countries
 WHERE
-    life_expectancy >= ’56’ AND
-    life_expectancy <= ’76’
+    life_expectancy >= ’56’
+    AND life_expectancy <= ’76’
 ;
 
 -- 問6
@@ -54,9 +54,7 @@ SELECT
 FROM
     cities
 WHERE
-    country_code = 'NLB' OR
-    country_code = 'ALB' OR
-    country_code = 'DZA'
+    country_code IN ('NLB', 'ALB', 'DZA')
 ;
 
 -- 問7
@@ -118,8 +116,8 @@ SELECT
 FROM
     countries
 WHERE
-    indep_year < 1990 OR
-    population > 100000
+    indep_year < 1990
+    OR population > 100000
 ;
 
 -- 問13
@@ -128,9 +126,9 @@ SELECT *
 FROM
     countries
 WHERE
-    code = 'DZA' OR
-    code = 'ALB' AND
-    indep_year < 1990
+    code = 'DZA'
+    OR code = 'ALB'
+    AND indep_year < 1990
 ;
 
 
@@ -179,19 +177,21 @@ ORDER BY
 -- 問18
 -- 平均寿命が長い順、独立記念日が新しい順に国を表示させてください。
 SELECT
-    name,life_expectancy,indep_year
+    name,
+    life_expectancy,
+    indep_year
 FROM
     countries
-WHERE
-    life_expectancy
 ORDER BY
-    life_expectancy DESC
+    life_expectancy DESC NULLS LAST,
+    indep_year DESC NULLS LAST
 ;
 
 -- 問19
 -- 全ての国の国コードの一文字目と国名を表示させてください。
 SELECT
-    SUBSTRING(code, 1, 1) AS first_char, name
+    SUBSTRING(code, 1, 1) AS first_char,
+    name
 FROM
     countries
 ;
@@ -257,57 +257,58 @@ WHERE
 -- 問25
 -- 全ての国と言語を表示してください。一つの国に複数言語があると思いますので同じ国名を言語数だけ出力してください。
 SELECT
-    countries.name, country_languages.language
+    c.name AS country_name,
+    cl.language
 FROM
-    countries
+    countries AS c
 JOIN
-    country_languages
+    country_languages AS cl
     ON countries.code = country_languages.country_code
 ;
 
 -- 問26
 -- 全ての国と言語と市区町村を表示してください。
 SELECT 
-    countries.name,
-    cities.name,
-    country_languages.language
+    c.name AS country_name,
+    ci.name AS city_name,
+    cl.language
 FROM
-    countries
+    countries AS c
 JOIN
-    cities 
-    ON countries.code = cities.country_code
+    cities AS ci
+    ON c.code = ci.country_code
 JOIN
-    country_languages 
-    ON countries.code = country_languages.country_code
+    country_languages AS cl
+    ON c.code = cl.country_code
 ;
 
 -- 問27
 -- 全ての有名人を出力してください。左側外部結合を使用して国名なし（country_codeがNULL）も表示してください。
 SELECT 
-    celebrities.name AS celebrity_name,
-    countries.name AS country_name
+    ce.name AS celebrity_name,
+    c.name AS country_name
 FROM
-    celebrities
+    celebrities AS ce
 LEFT JOIN
-    countries 
+    countries AS c
     ON celebrities.country_code = countries.code
 ;
 
 -- 問28
 -- 全ての有名人の名前,国名、第一言語を出力してください。
 SELECT 
-    celebrities.name AS celebrity_name,
-    countries.name AS country_name,
-    country_languages.language AS first_language
+    ce.name AS celebrity_name,
+    c.name AS country_name,
+    cl.language AS first_language
 FROM
-    celebrities
+    celebrities AS ce
 LEFT JOIN
-    countries 
+    countries AS c
     ON celebrities.country_code = countries.code
 LEFT JOIN
-    country_languages 
-    ON countries.code = country_languages.country_code
-    AND country_languages.is_official = 'T'
+    country_languages AS cl
+    ON c.code = cl.country_code
+    AND cl.is_official = 'T'
 ;
 
 -- 問29
@@ -315,26 +316,27 @@ LEFT JOIN
 SELECT
     c.name AS celebrity_name,
     (
-        SELECT name
-        FROM countries
-        WHERE code = c.country_code
+        SELECT c.name
+        FROM countries AS c
+        WHERE c.code = ce.country_code
     ) AS country_name
-    FROM celebrities c
+    FROM
+        celebrities AS ce;
 ;
 
 -- 問30
 -- 最年長が50歳以上かつ最年少が30歳以下の国を表示させてください。
 SELECT 
-    country_languages.country_code AS country_code,
-    MAX(celebrities.age) AS max_age,
-    MIN(celebrities.age) AS min_age
+    cl.country_code AS country_code,
+    MAX(ce.age) AS max_age,
+    MIN(ce.age) AS min_age
 FROM
-    celebrities
+    celebrities AS ce
 JOIN
-    country_languages
-    ON celebrities.country_code = country_languages.country_code
+    country_languages AS ce
+    ON ce.country_code = cl.country_code
 GROUP BY
-    country_languages.country_code
+    cl.country_code
 HAVING
     MAX(celebrities.age) >= 50 AND
     MIN(celebrities.age) <= 30
@@ -348,10 +350,9 @@ SELECT
 FROM
     celebrities
 WHERE
-    birth
-    LIKE '1991%'
+    birth LIKE '1991%'
 
-UNION
+UNION ALL
 
 SELECT
     '1981年生まれ' AS 誕生年,
@@ -359,22 +360,21 @@ SELECT
 FROM
     celebrities
 WHERE
-    birth
-    LIKE '1981%'
+    birth LIKE '1981%'
 ;
 
 -- 問32
 -- 有名人の出身国の平均年齢を高い方から順に表示してください。ただし、FROM句はcountriesテーブルとしてください。
 SELECT 
-    countries.name AS country_name,
-    AVG(celebrities.age) AS avg_age
+    c.name AS country_name,
+    AVG(ce.age) AS avg_age
 FROM 
-    countries
+    countries AS c
 LEFT JOIN 
-    celebrities
-    ON countries.code = celebrities.country_code
+    celebrities AS c
+    ON c.code = ce.country_code
 GROUP BY 
-    countries.code, countries.name
+    c.code, c.name
 ORDER BY 
     avg_age DESC
 ;
